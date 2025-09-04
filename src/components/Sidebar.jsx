@@ -25,8 +25,8 @@ import barss from "../../public/icon/bars.png";
 const navItems = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
   {
-    name: "Rider Registrations",
-    href: "/admin/rider-registrations",
+    name: "Song Management",
+    href: "/song-management",
     icon: FileText,
   },
   { name: "User Management", href: "/admin/user-management", icon: Users },

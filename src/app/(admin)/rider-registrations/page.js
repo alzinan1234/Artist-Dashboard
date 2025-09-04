@@ -1,7 +1,7 @@
 
 "use client"
 
-import RiderRegistration from '@/components/RiderRegistrations/RiderRegistration'
+import RiderRegistration from '@/components/Song-Management/SongManagement'
 import React from 'react'
 
 const page = () => {
