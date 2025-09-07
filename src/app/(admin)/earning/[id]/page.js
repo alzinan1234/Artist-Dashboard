@@ -81,7 +81,7 @@ const TransactionDetailsPage = ({ params }) => {
     return (
         <div className="relative min-h-screen bg-gray-100 flex items-center justify-center p-4">
             <style jsx global>{`
-                @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+                
                 body {
                     font-family: 'Inter', sans-serif;
                 }
