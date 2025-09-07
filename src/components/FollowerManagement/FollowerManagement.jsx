@@ -313,7 +313,7 @@ const FollowerManagement = () => {
                 onChange={(e) => {
                     setSearchTerm(e.target.value);
                     setCurrentPage(1); // Reset to first page on new search
-                }}
+                }}   
                 className="pl-10 pr-4 py-2 bg-[#312B36] text-white rounded-md border border-[#896E9C] focus:outline-none focus:border-[#A38BB4]"
               />
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" viewBox="0 0 20 20" fill="currentColor">

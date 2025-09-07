@@ -1,26 +1,17 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
 import {
   LayoutDashboard,
   FileText,
   Wallet,
   Users,
-  Megaphone,
-  CreditCard,
-  HelpCircle,
-  Bell,
   Settings,
-  Image as ImageIcon,
-  BanknoteArrowDown,
-  Bike,
-  Utensils,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react";
 import Image from "next/image";
-import dreckks from "../../public/tika-food.svg";
-import barss from "../../public/icon/bars.png";
 
 const navItems = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
@@ -31,19 +22,27 @@ const navItems = [
   },
   { name: "Playlist Management", href: "/playlist-management", icon: Users },
   { name: "Follower Management", href: "/follower-management", icon: Wallet },
-  { name: "Rider Management", href: "/admin/rider-management", icon: Bike },
-  { name: 'Restaurant Management', href: '/admin/restaurant-management', icon: Utensils },
-  { name: "Support", href: "/admin/support", icon: HelpCircle },
-  {
-    name: "Withdrawal Requests",
-    href: "/admin/withdrawal-requests",
-    icon: BanknoteArrowDown,
+];
+
+const settingsItems = [
+  { 
+    name: "Basic", 
+    href: "/settings/basic", 
+    isActive: true // This will have the pink gradient
   },
-  { name: "Settings", href: "/admin/settings", icon: Settings },
+  { 
+    name: "Notifications", 
+    href: "/settings/notifications", 
+    isActive: false 
+  }
 ];
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
   const pathname = usePathname();
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  // Check if we're on any settings page
+  const isSettingsActive = pathname.includes('/settings');
 
   return (
     <>
@@ -52,33 +51,34 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
           isOpen ? "translate-x-0 w-64" : "-translate-x-full w-64"
         }`}
       >
-        <div className="flex flex-col h-full justify-between  border-[#D6D6D6] bg-[linear-gradient(180deg,#6B316C_0%,#312B36_16.11%)]">
+        <div className="flex flex-col h-full justify-between border-[#D6D6D6] bg-[linear-gradient(180deg,#6B316C_0%,#312B36_16.11%)]">
           {/* Logo & Close Button */}
-          <div className="flex items-center justify-between  border-[#D6D6D6] pb-4 p-[25px]">
-            <Image className="w-[120px] " src="/bangr-logo.png" alt="Logo" width={150} height={50} />
+          <div className="flex  justify-between border-[#D6D6D6] pb-4 pt-6 px-6">
+            <Image className="w-[180px] " src="/bangr-logo.png" alt="Logo" width={180} height={50} />
             <button
               onClick={() => setIsOpen(false)}
               className="p-1 cursor-pointer rounded text-[#494949]"
             >
-             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="21" viewBox="0 0 22 21" fill="none">
-  <path d="M10.1775 20.3557C9.75767 20.3557 9.33764 20.1955 9.01769 19.8751L0.81394 11.6713C0.173022 11.0304 0.173022 9.9921 0.81394 9.35118L9.01769 1.14744C9.65861 0.506519 10.6969 0.506519 11.3378 1.14744C11.9787 1.78835 11.9787 2.82664 11.3378 3.46756L4.29387 10.5112L11.3388 17.5562C11.9798 18.1971 11.9798 19.2354 11.3388 19.8763C11.0184 20.1968 10.5979 20.3557 10.1775 20.3557Z" fill="url(#paint0_linear_2_207)"/>
-  <path opacity="0.4" d="M20.022 20.3557C19.6021 20.3557 19.1821 20.1955 18.8622 19.8751L10.6584 11.6713C10.0175 11.0304 10.0175 9.9921 10.6584 9.35118L18.8622 1.14744C19.5031 0.506519 20.5414 0.506519 21.1823 1.14744C21.8232 1.78835 21.8232 2.82664 21.1823 3.46756L14.1409 10.5112L21.1859 17.5562C21.8268 18.1971 21.8268 19.2354 21.1859 19.8763C20.8629 20.1968 20.4424 20.3557 20.022 20.3557Z" fill="url(#paint1_linear_2_207)"/>
-  <defs>
-    <linearGradient id="paint0_linear_2_207" x1="0.333252" y1="10.5112" x2="11.8195" y2="10.5112" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#FBCAFF"/>
-      <stop offset="1" stop-color="#C5FFE7"/>
-    </linearGradient>
-    <linearGradient id="paint1_linear_2_207" x1="10.1777" y1="10.5112" x2="21.6666" y2="10.5112" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#FBCAFF"/>
-      <stop offset="1" stop-color="#C5FFE7"/>
-    </linearGradient>
-  </defs>
-</svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="21" viewBox="0 0 22 21" fill="none">
+                <path d="M10.1775 20.3557C9.75767 20.3557 9.33764 20.1955 9.01769 19.8751L0.81394 11.6713C0.173022 11.0304 0.173022 9.9921 0.81394 9.35118L9.01769 1.14744C9.65861 0.506519 10.6969 0.506519 11.3378 1.14744C11.9787 1.78835 11.9787 2.82664 11.3378 3.46756L4.29387 10.5112L11.3388 17.5562C11.9798 18.1971 11.9798 19.2354 11.3388 19.8763C11.0184 20.1968 10.5979 20.3557 10.1775 20.3557Z" fill="url(#paint0_linear_2_207)"/>
+                <path opacity="0.4" d="M20.022 20.3557C19.6021 20.3557 19.1821 20.1955 18.8622 19.8751L10.6584 11.6713C10.0175 11.0304 10.0175 9.9921 10.6584 9.35118L18.8622 1.14744C19.5031 0.506519 20.5414 0.506519 21.1823 1.14744C21.8232 1.78835 21.8232 2.82664 21.1823 3.46756L14.1409 10.5112L21.1859 17.5562C21.8268 18.1971 21.8268 19.2354 21.1859 19.8763C20.8629 20.1968 20.4424 20.3557 20.022 20.3557Z" fill="url(#paint1_linear_2_207)"/>
+                <defs>
+                  <linearGradient id="paint0_linear_2_207" x1="0.333252" y1="10.5112" x2="11.8195" y2="10.5112" gradientUnits="userSpaceOnUse">
+                    <stop stopColor="#FBCAFF"/>
+                    <stop offset="1" stopColor="#C5FFE7"/>
+                  </linearGradient>
+                  <linearGradient id="paint1_linear_2_207" x1="10.1777" y1="10.5112" x2="21.6666" y2="10.5112" gradientUnits="userSpaceOnUse">
+                    <stop stopColor="#FBCAFF"/>
+                    <stop offset="1" stopColor="#C5FFE7"/>
+                  </linearGradient>
+                </defs>
+              </svg>
             </button>
           </div>
 
           {/* Navigation Items */}
           <nav className="mt-4 space-y-6 flex-grow overflow-y-auto">
+            {/* Regular Navigation Items */}
             {navItems.map(({ name, href, icon: Icon }) => {
               const isActive = pathname === href;
               return (
@@ -97,8 +97,51 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
               );
             })}
 
+            {/* Settings Dropdown */}
+            <div className="space-y-2">
+              {/* Settings Main Button */}
+              <button
+                onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+                className={`flex items-center justify-between px-[16px] w-[218px] mx-auto py-[14px] transition-all rounded-lg ${
+                  isSettingsActive
+                    ? "bg-gradient-to-b from-[#FF7DD0] to-[#F7009E] text-white"
+                    : "text-white hover:bg-gray-100 hover:text-black"
+                }`}
+              >
+                <div className="flex items-center">
+                  <Settings className="w-5 h-5 mr-3" />
+                  <span className="font-normal text-[13px]">Settings</span>
+                </div>
+                {isSettingsOpen ? (
+                  <ChevronDown className="w-4 h-4" />
+                ) : (
+                  <ChevronRight className="w-4 h-4" />
+                )}
+              </button>
+
+              {/* Dropdown Items */}
+              {isSettingsOpen && (
+                <div className="ml-8 space-y-2">
+                  {settingsItems.map((item) => (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      className={`flex items-center justify-between px-4 w-[186px] py-3 transition-all rounded-lg ${
+                        item.isActive
+                          ? "bg-gradient-to-b from-[#FF7DD0] to-[#F7009E] text-white"
+                          : "bg-[#4A4A4A] text-white hover:bg-gray-600"
+                      }`}
+                    >
+                      <span className="font-normal text-[13px]">{item.name}</span>
+                      <ChevronRight className="w-3 h-3" />
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {/* Logout Button */}
-            <div className="border-t border-[#D6D6D6] pt-6 ">
+            <div className="border-t border-[#D6D6D6] pt-6">
               <button className="flex ml-9 gap-2 items-center text-[#FF0000] hover:text-red-600">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -133,9 +176,11 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed top-4 left-4 z-50 bg-white p-2 rounded-md shadow-lg flex items-center justify-center hover:bg-gray-100 transition"
+          className="fixed top-6 left-4 z-50  p-2 text-[#F7009E]  rounded-md shadow-lg flex items-center justify-center bg-[#29232A]  cursor-pointer transition"
         >
-          <Image src={barss} alt="menu" width={24} height={24} />
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 12H21M3 6H21M3 18H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
         </button>
       )}
     </>
