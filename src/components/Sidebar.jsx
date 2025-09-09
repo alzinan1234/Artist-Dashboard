@@ -27,13 +27,11 @@ const navItems = [
 const settingsItems = [
   { 
     name: "Basic", 
-    href: "/settings/basic", 
-    isActive: true // This will have the pink gradient
+    href: "/settings/profile"
   },
   { 
     name: "Notifications", 
-    href: "/settings/notifications", 
-    isActive: false 
+    href: "/settings/notification"
   }
 ];
 
@@ -122,20 +120,25 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
               {/* Dropdown Items */}
               {isSettingsOpen && (
                 <div className="ml-8 space-y-2">
-                  {settingsItems.map((item) => (
-                    <Link
-                      key={item.name}
-                      href={item.href}
-                      className={`flex items-center justify-between px-4 w-[186px] py-3 transition-all rounded-lg ${
-                        item.isActive
-                          ? "bg-gradient-to-b from-[#FF7DD0] to-[#F7009E] text-white"
-                          : "bg-[#4A4A4A] text-white hover:bg-gray-600"
-                      }`}
-                    >
-                      <span className="font-normal text-[13px]">{item.name}</span>
-                      <ChevronRight className="w-3 h-3" />
-                    </Link>
-                  ))}
+                  {settingsItems.map((item) => {
+                    // Check if current pathname matches this settings item
+                    const isItemActive = pathname === item.href;
+                    
+                    return (
+                      <Link
+                        key={item.name}
+                        href={item.href}
+                        className={`flex items-center justify-between px-4 w-[186px] py-3 transition-all rounded-lg ${
+                          isItemActive
+                            ? "bg-gradient-to-b from-[#FF7DD0] to-[#F7009E] text-white"
+                            : "bg-[#4A4A4A] text-white hover:bg-gray-600"
+                        }`}
+                      >
+                        <span className="font-normal text-[13px]">{item.name}</span>
+                        <ChevronRight className="w-3 h-3" />
+                      </Link>
+                    );
+                  })}
                 </div>
               )}
             </div>

@@ -1,173 +1,220 @@
 "use client";
+import React, { useState, useRef } from 'react';
+import { Pencil, ChevronDown } from 'lucide-react';
 
-import React, { useState, useRef } from "react";
-import Image from "next/image";
-import { ArrowLeft } from "lucide-react";
-import { useRouter } from "next/navigation";
-import ChangePasswordForm from "./ChangePasswordForm";
+// A reusable component for input fields to keep the main form clean
+const InputField = ({ label, id, ...props }) => (
+  <div className="w-full">
+    <label htmlFor={id} className="block text-white text-sm font-medium mb-1.5">{label}</label>
+    <input
+      id={id}
+      className="w-full bg-[#3a333c] rounded-lg border border-slate-500 px-4 py-3 text-slate-300 placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-pink-500 transition-shadow duration-200"
+      {...props}
+    />
+  </div>
+);
 
-export default function ProfilePage() {
-  const router = useRouter();
-  const [activeTab, setActiveTab] = useState("changePassword");
+// A reusable component for select dropdowns
+const SelectField = ({ label, id, children, ...props }) => (
+  <div className="w-full">
+    <label htmlFor={id} className="block text-white text-sm font-medium mb-1.5">{label}</label>
+    <div className="relative">
+      <select
+        id={id}
+        className="w-full appearance-none bg-[#3a333c] rounded-lg border border-slate-500 px-4 py-3 text-slate-300 outline-none focus:ring-2 focus:ring-pink-500 transition-shadow duration-200"
+        {...props}
+      >
+        {children}
+      </select>
+      <ChevronDown className="w-5 h-5 text-slate-400 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+    </div>
+  </div>
+);
 
-  const [profileImage, setProfileImage] = useState("/image/userImage.png");
+
+export default function ProfileForm() {
+  const [formData, setFormData] = useState({
+    displayName: '',
+    email: 'demo@gmail.com',
+    country: '',
+    city: '',
+    province: '',
+    gender: '',
+    bio: ''
+  });
+
+  const [profileImage, setProfileImage] = useState("/admin-image.jpg");
   const fileInputRef = useRef(null);
 
-  const handleBackClick = () => {
-    router.back();
+  // Handles changes for all text inputs, textareas, and selects
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
-  const handleImageChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const newImageUrl = URL.createObjectURL(file);
-      setProfileImage(newImageUrl);
+  // Handles the file selection for the profile image
+  const handleImageChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setProfileImage(URL.createObjectURL(file));
+      // In a real app, you would upload the file here
     }
   };
-
-  const handleImageClick = () => {
+  
+  // Triggers the hidden file input when the edit icon is clicked
+  const handleEditClick = () => {
     fileInputRef.current.click();
   };
 
-  return (
-    <div className="min-h-screen bg-white text-black flex justify-center items-start pt-8 pb-8 rounded-lg"> {/* Changed bg to white, text to black */}
-      <div
-        className="flex items-center gap-4 cursor-pointer ml-5"
-        onClick={handleBackClick}
-      >
-        <div className="">
-          <ArrowLeft className="text-black bg-[#E0E0E0] rounded-full p-2" size={40} /> {/* Adjusted ArrowLeft background and text color */}
-        </div>
-        <h1 className="text-2xl font-bold">Profile</h1>
-      </div>{" "}
-      <div className="w-full max-w-6xl mx-auto px-4">
-        <div className="p-6">
-          <div className="flex justify-center gap-[18px] items-center mb-6">
-            <div
-              className="relative rounded-full border-4 border-gray-300 cursor-pointer" // Adjusted border color for visibility on white bg
-              onClick={handleImageClick}
-            >
-              <div className="w-[100px] h-[100px] rounded-full overflow-hidden">
-                <Image
-                  src={profileImage}
-                  alt="User Profile"
-                  width={100}
-                  height={100}
-                  className="rounded-full"
-                  style={{ objectFit: "cover" }}
-                />
-              </div>
-              <span className="absolute bottom-0 right-0 bg-blue-500 rounded-full p-1 border-2 border-white"> {/* Adjusted border color to white */}
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4 text-white"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M13.586 3.586a2 2 0 112.828 2.828l-7.793 7.793a.5.5 0 01-.128.093l-3 1a.5.5 0 01-.611-.611l1-3a.5.5 0 01.093-.128l7.793-7.793zM10.707 6.293a1 1 0 00-1.414 1.414L12 9.414l1.293-1.293a1 1 0 00-1.414-1.414L10.707 6.293z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </span>
-            </div>
-            <div className="flex flex-col gap-[12px]">
-              <h2 className="text-[24px] font-bold mt-3 text-black">Lukas Wagner</h2> {/* Changed text to black */}
-              <p className="text-black font-[400] text-xl">Admin</p> {/* Changed text to black */}
-            </div>
-          </div>
-          <div className="flex justify-center mb-6">
-            <button
-              className={`py-2 px-6 text-[16px] font-semibold ${
-                activeTab === "editProfile"
-                  ? "border-b-2 border-[#DD0F14] text-[#DD0F14]"
-                  : "text-gray-600 hover:text-gray-900" // Adjusted text color for non-active tabs
-              }`}
-              onClick={() => setActiveTab("editProfile")}
-            >
-              Edit Profile
-            </button>
-            <button
-              className={`py-2 px-6 text-[16px] font-semibold ${
-                activeTab === "changePassword"
-                  ? "border-b-2 border-[#DD0F14] text-[#DD0F14]"
-                  : "text-gray-600 hover:text-gray-900" // Adjusted text color for non-active tabs
-              }`}
-              onClick={() => setActiveTab("changePassword")}
-            >
-              Change Password
-            </button>
-          </div>
+  // Handles form submission
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    alert("Check the console for the form data!");
+    console.log("Form Data Saved:", { ...formData, profileImage });
+    // Here, you would typically send the data to your backend API
+  };
 
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleImageChange}
-            style={{ display: "none" }}
-            accept="image/png, image/jpeg, image/jpg"
+  return (
+    <div className=" mx-auto p-4 font-['Roboto']">
+      <form onSubmit={handleSubmit} className="p-8 bg-[#29232A] rounded-xl flex flex-col gap-8">
+        
+        {/* Header */}
+        <div>
+          <h1 className="text-white text-xl font-medium">Profile Information</h1>
+          <div className="w-full h-px bg-slate-600 mt-2" />
+        </div>
+        
+        {/* Profile Photo Section */}
+        <div>
+          <label className="block text-white text-sm font-medium mb-1.5">Photo Profile</label>
+          <div className="relative w-24 h-24">
+            <img 
+              className="w-24 h-24 rounded-lg object-cover" 
+              src={profileImage} 
+              alt="Profile" 
+            />
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              onChange={handleImageChange}
+              className="hidden"
+              accept="image/*"
+            />
+            <button 
+              type="button"
+              onClick={handleEditClick}
+              className="absolute -bottom-1 -right-1 w-7 h-7 bg-slate-800 rounded-full flex items-center justify-center border-2 border-[#29232A] hover:bg-slate-700 transition-colors"
+              aria-label="Edit profile picture"
+            >
+              <Pencil className="w-4 h-4 text-white" />
+            </button>
+          </div>
+        </div>
+        
+        {/* Form Fields */}
+        <div className="flex flex-col gap-6">
+          <InputField
+            label="Display Name"
+            id="displayName"
+            name="displayName"
+            type="text"
+            placeholder="Enter Your Display Name"
+            value={formData.displayName}
+            onChange={handleInputChange}
+          />
+          
+          <InputField
+            label="Email"
+            id="email"
+            name="email"
+            type="email"
+            value={formData.email}
+            onChange={handleInputChange}
           />
 
-          {activeTab === "editProfile" && (
-            <div className="p-6 flex flex-col items-center">
-              <form className="w-full max-w-[982px] ">
-                <div className="mb-4">
-                  <label
-                    htmlFor="fullName"
-                    className="block text-black text-sm font-bold mb-2" // Changed text to black
-                  >
-                    Full Name
-                  </label>
-                  <input
-                    type="text"
-                    id="fullName"
-                    className="shadow appearance-none rounded w-full h-[50px] py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline border border-[#C3C3C3] bg-gray-100" // Changed text and background of input
-                    defaultValue="Lukas Wagner"
-                  />
-                </div>
-                <div className="mb-4">
-                  <label
-                    htmlFor="email"
-                    className="block text-black text-sm font-bold mb-2" // Changed text to black
-                  >
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    className="shadow appearance-none rounded w-full h-[50px] py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline border border-[#C3C3C3] bg-gray-100" // Changed text and background of input
-                    defaultValue="lukas.wagner@example.com"
-                  />
-                </div>
-                <div className="mb-4">
-                  <label
-                    htmlFor="contactNo"
-                    className="block text-black text-sm font-bold mb-2" // Changed text to black
-                  >
-                    Contact No
-                  </label>
-                  <input
-                    type="tel"
-                    id="contactNo"
-                    className="shadow appearance-none rounded w-full h-[50px] py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline border border-[#C3C3C3] bg-gray-100" // Changed text and background of input
-                    defaultValue="+1234567890"
-                  />
-                </div>
-                <div className="flex items-center justify-center mt-6">
-                  <button
-                    type="submit"
-                    className="bg-[#DD0F14] hover:bg-opacity-80 text-white font-bold w-full py-3 px-4 rounded-[4px] focus:outline-none focus:shadow-outline"
-                    
-                  >
-                    Save Changes
-                  </button>
-                </div>
-              </form>
-            </div>
-          )}
-          {activeTab === "changePassword" && <ChangePasswordForm />}
+          {/* Grid for location and personal details */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <SelectField 
+              label="Country" 
+              id="country" 
+              name="country" 
+              value={formData.country} 
+              onChange={handleInputChange}
+            >
+              <option value="">Select Your Country</option>
+              <option value="us">United States</option>
+              <option value="bd">Bangladesh</option>
+              <option value="ca">Canada</option>
+            </SelectField>
+
+            <SelectField 
+              label="City" 
+              id="city" 
+              name="city" 
+              value={formData.city} 
+              onChange={handleInputChange}
+            >
+              <option value="">Select Your City</option>
+              <option value="dhaka">Dhaka</option>
+              <option value="chittagong">Chittagong</option>
+              <option value="sylhet">Sylhet</option>
+            </SelectField>
+
+            <SelectField 
+              label="Province" 
+              id="province" 
+              name="province" 
+              value={formData.province} 
+              onChange={handleInputChange}
+            >
+              <option value="">Select Your Province</option>
+              <option value="dhaka">Dhaka Division</option>
+              <option value="chittagong">Chittagong Division</option>
+              <option value="sylhet">Sylhet Division</option>
+            </SelectField>
+
+            <SelectField 
+              label="Gender" 
+              id="gender" 
+              name="gender" 
+              value={formData.gender} 
+              onChange={handleInputChange}
+            >
+              <option value="">Select Your Gender</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="other">Other</option>
+            </SelectField>
+          </div>
+
+          <div>
+            <label htmlFor="bio" className="block text-white text-sm font-medium mb-1.5">Bio</label>
+            <textarea
+              id="bio"
+              name="bio"
+              placeholder="Enter Your Bio"
+              rows="3"
+              value={formData.bio}
+              onChange={handleInputChange}
+              className="w-full bg-[#3a333c] rounded-lg border border-slate-500 px-4 py-3 text-slate-300 placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-pink-500 transition-shadow duration-200 resize-none"
+            />
+          </div>
         </div>
-      </div>
+        
+        {/* Save Button */}
+        <div>
+          <button
+            type="submit"
+            className="px-6 py-2.5 text-white text-sm font-semibold rounded-lg border border-[#FF7DD0] bg-gradient-to-b from-[#FF7DD0] to-[#F7009E] shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] hover:from-[#f86ac7] hover:to-[#d9008d] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#29232A] focus:ring-pink-500"
+          >
+            Save
+          </button>
+        </div>
+
+      </form>
     </div>
   );
 }

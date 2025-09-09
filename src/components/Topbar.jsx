@@ -149,7 +149,7 @@ export default function Topbar({  }) {
   const [showNotifications, setShowNotifications] = useState(false);
 
   const handleUserImageClick = () => {
-    router.push('/admin/profile');
+    router.push('/settings/profile');
   };
 
   const handleBellClick = () => {
