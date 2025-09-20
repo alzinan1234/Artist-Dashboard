@@ -10,6 +10,9 @@ import {
   Settings,
   ChevronDown,
   ChevronRight,
+  Music,
+  ListMusic,
+  UserRoundPlus,
 } from "lucide-react";
 import Image from "next/image";
 
@@ -18,10 +21,10 @@ const navItems = [
   {
     name: "Song Management",
     href: "/song-management",
-    icon: FileText,
+    icon: Music,
   },
-  { name: "Playlist Management", href: "/playlist-management", icon: Users },
-  { name: "Follower Management", href: "/follower-management", icon: Wallet },
+  { name: "Playlist Management", href: "/playlist-management", icon: ListMusic },
+  { name: "Follower Management", href: "/follower-management", icon: UserRoundPlus },
 ];
 
 const settingsItems = [
