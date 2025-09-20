@@ -18,36 +18,36 @@ const EarningSummaryChart = () => {
 
   // Generate fake data for the chart
   const monthlyData = [
-    { month: "Jan", new: 320, old: 280 },
-    { month: "Feb", new: 350, old: 320 },
-    { month: "Mar", new: 380, old: 340 },
-    { month: "Apr", new: 420, old: 380 },
-    { month: "May", new: 450, old: 400 },
-    { month: "Jun", new: 480, old: 420 },
-    { month: "Jul", new: 460, old: 430 },
-    { month: "Aug", new: 490, old: 450 },
-    { month: "Sep", new: 480, old: 440 },
-    { month: "Oct", new: 510, old: 460 },
-    { month: "Nov", new: 495, old: 470 },
-    { month: "Dec", new: 520, old: 480 },
+    { month: "Jan", plays: 320, money: 280 },
+    { month: "Feb", plays: 350, money: 320 },
+    { month: "Mar", plays: 380, money: 340 },
+    { month: "Apr", plays: 420, money: 380 },
+    { month: "May", plays: 450, money: 400 },
+    { month: "Jun", plays: 480, money: 420 },
+    { month: "Jul", plays: 460, money: 430 },
+    { month: "Aug", plays: 490, money: 450 },
+    { month: "Sep", plays: 480, money: 440 },
+    { month: "Oct", plays: 510, money: 460 },
+    { month: "Nov", plays: 495, money: 470 },
+    { month: "Dec", plays: 520, money: 480 },
   ];
 
   const dailyData = Array.from({ length: 30 }, (_, i) => ({
     month: `D${i + 1}`,
-    new: Math.floor(Math.random() * 100) + 400,
-    old: Math.floor(Math.random() * 100) + 350,
+    plays: Math.floor(Math.random() * 100) + 400,
+    money: Math.floor(Math.random() * 100) + 350,
   }));
 
   const weeklyData = Array.from({ length: 12 }, (_, i) => ({
     month: `W${i + 1}`,
-    new: Math.floor(Math.random() * 100) + 400,
-    old: Math.floor(Math.random() * 100) + 350,
+    plays: Math.floor(Math.random() * 100) + 400,
+    money: Math.floor(Math.random() * 100) + 350,
   }));
 
   const yearlyData = Array.from({ length: 12 }, (_, i) => ({
     month: 2013 + i,
-    new: Math.floor(Math.random() * 2000) + 3000,
-    old: Math.floor(Math.random() * 2000) + 2500,
+    plays: Math.floor(Math.random() * 2000) + 3000,
+    money: Math.floor(Math.random() * 2000) + 2500,
   }));
 
   const getChartData = () => {
@@ -140,11 +140,11 @@ const EarningSummaryChart = () => {
                   <div className="flex gap-4">
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 bg-[#A141FE] rounded-full"></div>
-                      <span className="text-gray-300 text-xs">New</span>
+                      <span className="text-gray-300 text-xs">Plays</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 bg-[#245FE7] rounded-full"></div>
-                      <span className="text-gray-300 text-xs">Old</span>
+                      <span className="text-gray-300 text-xs">Money</span>
                     </div>
                   </div>
                 </div>
@@ -158,7 +158,7 @@ const EarningSummaryChart = () => {
                     >
                       <defs>
                         <linearGradient
-                          id="colorNew"
+                          id="colorPlays"
                           x1="0"
                           y1="0"
                           x2="0"
@@ -176,7 +176,7 @@ const EarningSummaryChart = () => {
                           />
                         </linearGradient>
                         <linearGradient
-                          id="colorOld"
+                          id="colorMoney"
                           x1="0"
                           y1="0"
                           x2="0"
@@ -223,19 +223,19 @@ const EarningSummaryChart = () => {
                       <Tooltip content={<CustomTooltip />} />
                       <Area
                         type="monotone"
-                        dataKey="new"
+                        dataKey="plays"
                         stroke="#A141FE"
                         strokeWidth={3}
                         fillOpacity={1}
-                        fill="url(#colorNew)"
+                        fill="url(#colorPlays)"
                       />
                       <Area
                         type="monotone"
-                        dataKey="old"
+                        dataKey="money"
                         stroke="#245FE7"
                         strokeWidth={3}
                         fillOpacity={1}
-                        fill="url(#colorOld)"
+                        fill="url(#colorMoney)"
                       />
                     </AreaChart>
                   </ResponsiveContainer>

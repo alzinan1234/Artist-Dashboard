@@ -41,6 +41,7 @@ const FollowerManagement = () => {
   const [confirmModal, setConfirmModal] = useState(false);
   const [message, setMessage] = useState("");
   const [sendToAll, setSendToAll] = useState(false);
+  const [targetUserName, setTargetUserName] = useState("");
 
   const itemsPerPage = 11;
 
@@ -50,16 +51,16 @@ const FollowerManagement = () => {
       follower.name.toLowerCase().includes(searchTerm.toLowerCase())
     ), [followers, searchTerm]);
 
-  // **FIXED**: Total pages calculation is now based on the *filtered* list
+  // Total pages calculation is now based on the *filtered* list
   const totalPages = Math.ceil(filteredFollowers.length / itemsPerPage);
 
-  // **FIXED**: Paginated followers logic remains the same but depends on the dynamic totalPages
+  // Paginated followers logic remains the same but depends on the dynamic totalPages
   const paginatedFollowers = filteredFollowers.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
   
-  // **FIXED**: A robust page change handler that ensures page is within bounds
+  // A robust page change handler that ensures page is within bounds
   const handlePageChange = (page) => {
     // Ensure page is not less than 1 or greater than totalPages
     const newPage = Math.max(1, Math.min(page, totalPages));
@@ -91,7 +92,7 @@ const FollowerManagement = () => {
     );
   };
 
-  // **FIXED**: Improved remove handler to adjust current page if needed
+  // Improved remove handler to adjust current page if needed
   const handleRemove = (userId) => {
     setFollowers((prev) => {
         const newFollowers = prev.filter((f) => f.id !== userId);
@@ -100,17 +101,24 @@ const FollowerManagement = () => {
         // If the current page is now empty and not the first page, go back one page
         if (currentPage > newTotalPages && newTotalPages > 0) {
             setCurrentPage(newTotalPages);
+        } else if (paginatedFollowers.length === 1 && currentPage > 1) {
+            // Also handle the case where the last item on a page is removed
+            setCurrentPage(currentPage - 1);
         }
         return newFollowers;
     });
   };
 
+  // Enhanced message handling for individual and bulk messaging
   const handleSendMessage = (individual = false, userId = null) => {
     if (individual && userId) {
+      const user = followers.find(f => f.id === userId);
+      setTargetUserName(user ? user.name : "");
       setSelectedUsers([userId]);
       setSendToAll(false);
     } else {
-      // Logic for sending to all filtered users if needed
+      // This sets up the modal for sending a message to all filtered followers
+      setTargetUserName("");
       setSendToAll(true);
     }
     setMessageModal(true);
@@ -127,12 +135,13 @@ const FollowerManagement = () => {
 
   const handleFinalSend = () => {
     console.log("Sending message:", message);
-    console.log("To users:", sendToAll ? "All users" : selectedUsers);
+    console.log("To users:", sendToAll ? "All filtered followers" : selectedUsers);
 
     setConfirmModal(false);
     setMessage("");
     setSelectedUsers([]);
     setSendToAll(false);
+    setTargetUserName("");
     
     alert("Message sent successfully!");
   };
@@ -150,7 +159,7 @@ const FollowerManagement = () => {
     }
   };
 
-  // **NEW**: Helper function to create the dynamic pagination numbers
+  // Helper function to create the dynamic pagination numbers
   const generatePagination = () => {
     if (totalPages <= 1) return [];
 
@@ -196,7 +205,7 @@ const FollowerManagement = () => {
     if (!messageModal) return null;
     return (
       <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-        <div className="bg-[#29232A] rounded-lg w-full max-w-3xl py-20">
+        <div className="bg-[#29232A] rounded-lg w-full max-w-3xl py-10 md:py-20">
           <div className="p-6">
             <h3 className="text-lg font-semibold text-[#F9FAFB] mb-4">
               Send Message
@@ -208,14 +217,18 @@ const FollowerManagement = () => {
               <textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                className="w-full h-32 px-4 py-3 bg-[#000000] text-white rounded-md"
+                className="w-full h-32 px-4 py-3 bg-black text-white rounded-md border border-[#896E9C] focus:outline-none focus:border-[#A38BB4]"
                 placeholder="Enter your message..."
                 rows={4}
               />
             </div>
             <div className="flex items-center mb-6">
               <label htmlFor="sendToAll" className="text-sm text-[#F9FAFB]">
-                Selecting this will send the same message to all users.
+                {sendToAll 
+                  ? `This message will be sent to all followers (${filteredFollowers.length} followers) matching the current search/filter.`
+                  : targetUserName 
+                    ? `This message will be sent to ${targetUserName}.`
+                    : `This message will be sent to ${selectedUsers.length} selected follower(s).`}
               </label>
             </div>
             <div className="flex space-x-3">
@@ -224,6 +237,7 @@ const FollowerManagement = () => {
                   setMessageModal(false);
                   setMessage("");
                   setSendToAll(false);
+                  setTargetUserName("");
                 }}
                 className="px-4 py-2 bg-[#F7009E33] text-[#F9FAFB] rounded-md border border-[#896E9C] hover:bg-[#2A374B] transition-colors"
               >
@@ -246,11 +260,11 @@ const FollowerManagement = () => {
     if (!confirmModal) return null;
     return (
       <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-        <div className="bg-[#312B36] rounded-lg w-full max-w-3xl py-20">
+        <div className="bg-[#312B36] rounded-lg w-full max-w-lg py-10 md:py-20">
           <div className="p-6 text-center">
             <div className="mb-4">
               <div className="mx-auto w-16 h-16 flex items-center justify-center mb-4">
-                <svg width="100" height="84" viewBox="0 0 100 84" fill="none">
+                <svg width="100" height="84" viewBox="0 0 100 84" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M98.6673 77.4539C97.7604 79.1185 96.4388 80.5214 94.8442 81.5104C93.1431 82.5644 91.1661 83.1223 89.1282 83.1223H10.873C8.83414 83.1223 6.85814 82.5644 5.15697 81.5104C3.56236 80.5214 2.2406 79.1185 1.33381 77.4539C0.426908 75.7883 -0.0335488 73.9158 0.00190308 72.0403C0.0404923 70.0399 0.645058 68.0771 1.7517 66.3648L12.9352 49.0656L40.8792 5.842C42.8897 2.73394 46.2991 0.877686 50.0005 0.877686C53.702 0.877686 57.1113 2.73394 59.1208 5.842L87.0648 49.0656L98.2483 66.3648C99.3549 68.0771 99.9605 70.0399 99.9981 72.0403C100.034 73.9159 99.5732 75.7883 98.6673 77.4539Z" fill="url(#paint0_linear_0_6682)"/>
                     <path d="M88.3074 78.6023H11.6934C6.16663 78.6023 2.83499 72.4813 5.83554 67.8399L44.1425 8.58603C46.8909 4.33493 53.1099 4.33493 55.8582 8.58603L94.1652 67.8399C97.1658 72.4812 93.8342 78.6023 88.3074 78.6023Z" fill="url(#paint1_linear_0_6682)"/>
                     <path d="M53.6016 25.2801L52.335 53.6658C52.2775 54.9553 51.1855 55.954 49.896 55.8965C48.6799 55.8422 47.7222 54.8581 47.6652 53.6658L46.3987 25.2801C46.3099 23.291 47.8504 21.6067 49.8395 21.5179C51.9413 21.4129 53.7048 23.1796 53.6016 25.2801Z" fill="url(#paint2_linear_0_6682)"/>
@@ -271,7 +285,11 @@ const FollowerManagement = () => {
             </h3>
             <p className="text-[#ffffff] mb-6">
               You are about to send this message to{" "}
-              {sendToAll ? "all users" : `${selectedUsers.length} user(s)`}.
+              {sendToAll 
+                ? `all ${filteredFollowers.length} displayed followers` 
+                : targetUserName 
+                  ? targetUserName
+                  : `${selectedUsers.length} follower(s)`}.
             </p>
             <div className="flex justify-center space-x-3">
               <button
@@ -287,7 +305,7 @@ const FollowerManagement = () => {
                 onClick={handleFinalSend}
                 className="px-6 py-2 bg-gradient-to-b from-[#FF7DD0] to-[#F7009E] text-white rounded-md hover:from-[#FF6BC9] hover:to-[#E6008F] transition-all duration-200"
               >
-                Send to All
+                Send
               </button>
             </div>
           </div>
@@ -325,6 +343,12 @@ const FollowerManagement = () => {
                 <path fillRule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-1.447.894l-2-1A1 1 0 017 14v-2.586L3.293 6.707A1 1 0 013 6V3z" clipRule="evenodd" />
               </svg>
               Filter
+            </button>
+            <button 
+              onClick={() => handleSendMessage()}
+              className="px-4 py-2 bg-[#F7009E4D] text-[#F7009E] cursor-pointer rounded-md hover:bg-[#f7009e66] transition-colors text-sm font-medium whitespace-nowrap"
+            >
+              Push Message to All
             </button>
           </div>
         </div>
@@ -384,7 +408,7 @@ const FollowerManagement = () => {
           </table>
         </div>
         
-        {/* -- **FIXED**: DYNAMIC PAGINATION CONTROLS -- */}
+        {/* DYNAMIC PAGINATION CONTROLS */}
         {totalPages > 0 && (
           <div className="flex justify-end items-center mt-6 space-x-2">
             <button
