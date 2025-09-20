@@ -67,7 +67,7 @@ const FollowerManagement = () => {
     setCurrentPage(newPage);
   };
   
-  // NOTE: This functionality requires checkboxes in the UI to be fully utilized.
+  // Individual user selection handler
   const handleSelectUser = (userId) => {
     setSelectedUsers((prev) =>
       prev.includes(userId)
@@ -76,13 +76,21 @@ const FollowerManagement = () => {
     );
   };
 
-  // NOTE: This functionality requires a "select all" checkbox in the UI.
+  // Select/deselect all users on current page - same functionality as User Management
   const handleSelectAll = () => {
-    // This should select all *filtered* users, not the entire list
-    if (selectedUsers.length === filteredFollowers.length) {
-      setSelectedUsers([]);
+    const currentPageIds = paginatedFollowers.map((u) => u.id);
+    const allOnPageSelected = currentPageIds.every((id) =>
+      selectedUsers.includes(id)
+    );
+
+    if (allOnPageSelected) {
+      // Deselect all on current page
+      setSelectedUsers((prev) =>
+        prev.filter((id) => !currentPageIds.includes(id))
+      );
     } else {
-      setSelectedUsers(filteredFollowers.map((f) => f.id));
+      // Select all on current page
+      setSelectedUsers((prev) => [...new Set([...prev, ...currentPageIds])]);
     }
   };
 
@@ -96,7 +104,10 @@ const FollowerManagement = () => {
   const handleRemove = (userId) => {
     setFollowers((prev) => {
         const newFollowers = prev.filter((f) => f.id !== userId);
-        const newTotalPages = Math.ceil(newFollowers.length / itemsPerPage);
+        const newFilteredFollowers = newFollowers.filter((follower) =>
+          follower.name.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        const newTotalPages = Math.ceil(newFilteredFollowers.length / itemsPerPage);
 
         // If the current page is now empty and not the first page, go back one page
         if (currentPage > newTotalPages && newTotalPages > 0) {
@@ -107,6 +118,9 @@ const FollowerManagement = () => {
         }
         return newFollowers;
     });
+    
+    // Remove from selected users
+    setSelectedUsers((prev) => prev.filter((id) => id !== userId));
   };
 
   // Enhanced message handling for individual and bulk messaging
@@ -120,7 +134,16 @@ const FollowerManagement = () => {
       // This sets up the modal for sending a message to all filtered followers
       setTargetUserName("");
       setSendToAll(true);
+      setSelectedUsers([]);
     }
+    setMessageModal(true);
+  };
+
+  // Send message to selected users handler
+  const handleMessageSelected = () => {
+    if (selectedUsers.length === 0) return;
+    setSendToAll(false);
+    setTargetUserName("");
     setMessageModal(true);
   };
 
@@ -203,6 +226,19 @@ const FollowerManagement = () => {
 
   const MessageModal = () => {
     if (!messageModal) return null;
+
+    const getRecipientText = () => {
+      if (sendToAll) return "all followers";
+      if (targetUserName) return targetUserName;
+      if (selectedUsers.length > 1)
+        return `${selectedUsers.length} selected followers`;
+      if (selectedUsers.length === 1) {
+        const user = followers.find((u) => u.id === selectedUsers[0]);
+        return user ? user.name : "1 follower";
+      }
+      return "followers";
+    };
+
     return (
       <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
         <div className="bg-[#29232A] rounded-lg w-full max-w-3xl py-10 md:py-20">
@@ -210,6 +246,12 @@ const FollowerManagement = () => {
             <h3 className="text-lg font-semibold text-[#F9FAFB] mb-4">
               Send Message
             </h3>
+            <p className="text-[#c1bec4] mb-4">
+              Sending message to:{" "}
+              <span className="text-[#F7009E] font-medium">
+                {getRecipientText()}
+              </span>
+            </p>
             <div className="mb-4">
               <label className="block text-sm font-medium text-[#F9FAFB] mb-2">
                 Type here...
@@ -222,22 +264,14 @@ const FollowerManagement = () => {
                 rows={4}
               />
             </div>
-            <div className="flex items-center mb-6">
-              <label htmlFor="sendToAll" className="text-sm text-[#F9FAFB]">
-                {sendToAll 
-                  ? `This message will be sent to all followers (${filteredFollowers.length} followers) matching the current search/filter.`
-                  : targetUserName 
-                    ? `This message will be sent to ${targetUserName}.`
-                    : `This message will be sent to ${selectedUsers.length} selected follower(s).`}
-              </label>
-            </div>
             <div className="flex space-x-3">
               <button
                 onClick={() => {
                   setMessageModal(false);
                   setMessage("");
-                  setSendToAll(false);
-                  setTargetUserName("");
+                  if (!sendToAll && !targetUserName) {
+                    setSelectedUsers([]);
+                  }
                 }}
                 className="px-4 py-2 bg-[#F7009E33] text-[#F9FAFB] rounded-md border border-[#896E9C] hover:bg-[#2A374B] transition-colors"
               >
@@ -258,6 +292,19 @@ const FollowerManagement = () => {
 
   const ConfirmModal = () => {
     if (!confirmModal) return null;
+
+    const getRecipientText = () => {
+      if (sendToAll) return `all ${filteredFollowers.length} displayed followers`;
+      if (targetUserName) return targetUserName;
+      if (selectedUsers.length > 1)
+        return `${selectedUsers.length} follower(s)`;
+      if (selectedUsers.length === 1) {
+        const user = followers.find((u) => u.id === selectedUsers[0]);
+        return user ? user.name : "1 follower";
+      }
+      return "followers";
+    };
+
     return (
       <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
         <div className="bg-[#312B36] rounded-lg w-full max-w-lg py-10 md:py-20">
@@ -271,11 +318,11 @@ const FollowerManagement = () => {
                     <path d="M50.0002 68.1481C52.0112 68.1481 53.6415 66.5178 53.6415 64.5068C53.6415 62.4957 52.0112 60.8655 50.0002 60.8655C47.9892 60.8655 46.3589 62.4957 46.3589 64.5068C46.3589 66.5178 47.9892 68.1481 50.0002 68.1481Z" fill="url(#paint3_linear_0_6682)"/>
                     <path opacity="0.36" d="M87.0647 49.0656C76.6298 54.9977 63.8294 58.4902 50.0004 58.4902C36.1704 58.4902 23.37 54.9977 12.9351 49.0656L40.8791 5.842C42.8896 2.73394 46.299 0.877686 50.0004 0.877686C53.7018 0.877686 57.1112 2.73394 59.1207 5.842L87.0647 49.0656Z" fill="url(#paint4_linear_0_6682)"/>
                     <defs>
-                        <linearGradient id="paint0_linear_0_6682" x1="50" y1="0.877686" x2="50" y2="83.1223" gradientUnits="userSpaceOnUse"><stop stop-color="#FF7DD0"/><stop offset="1" stop-color="#F7009E"/></linearGradient>
-                        <linearGradient id="paint1_linear_0_6682" x1="21.5279" y1="42" x2="78.3348" y2="42" gradientUnits="userSpaceOnUse"><stop stop-color="#FFD445"/><stop offset="0.9989" stop-color="#FF9A1F"/></linearGradient>
-                        <linearGradient id="paint2_linear_0_6682" x1="50.0005" y1="21.5134" x2="50.0005" y2="55.8989" gradientUnits="userSpaceOnUse"><stop stop-color="#FF7DD0"/><stop offset="1" stop-color="#F7009E"/></linearGradient>
-                        <linearGradient id="paint3_linear_0_6682" x1="50.0002" y1="60.8655" x2="50.0002" y2="68.1481" gradientUnits="userSpaceOnUse"><stop stop-color="#FF7DD0"/><stop offset="1" stop-color="#F7009E"/></linearGradient>
-                        <linearGradient id="paint4_linear_0_6682" x1="50" y1="55.8796" x2="50" y2="3.12271" gradientUnits="userSpaceOnUse"><stop stop-color="white" stop-opacity="0.8"/><stop offset="1" stop-color="white" stop-opacity="0"/></linearGradient>
+                        <linearGradient id="paint0_linear_0_6682" x1="50" y1="0.877686" x2="50" y2="83.1223" gradientUnits="userSpaceOnUse"><stop stopColor="#FF7DD0"/><stop offset="1" stopColor="#F7009E"/></linearGradient>
+                        <linearGradient id="paint1_linear_0_6682" x1="21.5279" y1="42" x2="78.3348" y2="42" gradientUnits="userSpaceOnUse"><stop stopColor="#FFD445"/><stop offset="0.9989" stopColor="#FF9A1F"/></linearGradient>
+                        <linearGradient id="paint2_linear_0_6682" x1="50.0005" y1="21.5134" x2="50.0005" y2="55.8989" gradientUnits="userSpaceOnUse"><stop stopColor="#FF7DD0"/><stop offset="1" stopColor="#F7009E"/></linearGradient>
+                        <linearGradient id="paint3_linear_0_6682" x1="50.0002" y1="60.8655" x2="50.0002" y2="68.1481" gradientUnits="userSpaceOnUse"><stop stopColor="#FF7DD0"/><stop offset="1" stopColor="#F7009E"/></linearGradient>
+                        <linearGradient id="paint4_linear_0_6682" x1="50" y1="55.8796" x2="50" y2="3.12271" gradientUnits="userSpaceOnUse"><stop stopColor="white" stopOpacity="0.8"/><stop offset="1" stopColor="white" stopOpacity="0"/></linearGradient>
                     </defs>
                 </svg>
               </div>
@@ -285,12 +332,13 @@ const FollowerManagement = () => {
             </h3>
             <p className="text-[#ffffff] mb-6">
               You are about to send this message to{" "}
-              {sendToAll 
-                ? `all ${filteredFollowers.length} displayed followers` 
-                : targetUserName 
-                  ? targetUserName
-                  : `${selectedUsers.length} follower(s)`}.
+              <span className="text-[#F7009E] font-medium">
+                {getRecipientText()}
+              </span>.
             </p>
+            <div className="bg-[#423a47] p-3 rounded-md mt-4 mb-4">
+              <p className="text-[#F9FAFB] text-sm">{message}</p>
+            </div>
             <div className="flex justify-center space-x-3">
               <button
                 onClick={() => {
@@ -299,13 +347,13 @@ const FollowerManagement = () => {
                 }}
                 className="px-6 py-2 bg-[#F7009E33] text-[#F9FAFB] rounded-md border border-[#896E9C] hover:bg-[#2A374B] transition-colors"
               >
-                Cancel
+                Back
               </button>
               <button
                 onClick={handleFinalSend}
                 className="px-6 py-2 bg-gradient-to-b from-[#FF7DD0] to-[#F7009E] text-white rounded-md hover:from-[#FF6BC9] hover:to-[#E6008F] transition-all duration-200"
               >
-                Send
+                Confirm Send
               </button>
             </div>
           </div>
@@ -331,6 +379,7 @@ const FollowerManagement = () => {
                 onChange={(e) => {
                     setSearchTerm(e.target.value);
                     setCurrentPage(1); // Reset to first page on new search
+                    setSelectedUsers([]); // Clear selections on search
                 }}   
                 className="pl-10 pr-4 py-2 bg-[#312B36] text-white rounded-md border border-[#896E9C] focus:outline-none focus:border-[#A38BB4]"
               />
@@ -344,12 +393,23 @@ const FollowerManagement = () => {
               </svg>
               Filter
             </button>
-            <button 
-              onClick={() => handleSendMessage()}
-              className="px-4 py-2 bg-[#F7009E4D] text-[#F7009E] cursor-pointer rounded-md hover:bg-[#f7009e66] transition-colors text-sm font-medium whitespace-nowrap"
-            >
-              Push Message to All
-            </button>
+            
+            {/* Dynamic Message Button */}
+            {selectedUsers.length > 0 ? (
+              <button
+                onClick={handleMessageSelected}
+                className="px-4 py-2 bg-[#F7009E4D] text-[#F7009E] cursor-pointer rounded-md hover:bg-[#f7009e66] transition-colors text-sm font-medium whitespace-nowrap"
+              >
+                Message Selected ({selectedUsers.length})
+              </button>
+            ) : (
+              <button 
+                onClick={() => handleSendMessage()}
+                className="px-4 py-2 bg-[#F7009E4D] text-[#F7009E] cursor-pointer rounded-md hover:bg-[#f7009e66] transition-colors text-sm font-medium whitespace-nowrap"
+              >
+                Push Message to All
+              </button>
+            )}
           </div>
         </div>
 
@@ -357,6 +417,28 @@ const FollowerManagement = () => {
           <table className="min-w-full">
             <thead className="bg-[#312B36] border-b border-[#896E9C]">
               <tr>
+                {/* Select All Checkbox */}
+                <th className="px-6 py-4">
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      onChange={handleSelectAll}
+                      checked={
+                        paginatedFollowers.length > 0 &&
+                        paginatedFollowers.every((follower) =>
+                          selectedUsers.includes(follower.id)
+                        )
+                      }
+                      className="form-checkbox h-5 w-5 bg-transparent border-[#896E9C] rounded text-[#F7009E] focus:ring-0 focus:ring-offset-0"
+                    />
+                    <span
+                      onClick={handleSelectAll}
+                      className="text-xs font-medium text-[#F9FAFB] uppercase tracking-wider cursor-pointer select-none"
+                    >
+                      Select All
+                    </span>
+                  </div>
+                </th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-[#F9FAFB] uppercase tracking-wider">NO</th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-[#F9FAFB] uppercase tracking-wider">Name</th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-[#F9FAFB] uppercase tracking-wider">Status</th>
@@ -367,13 +449,31 @@ const FollowerManagement = () => {
             <tbody className="divide-y divide-[#896E9C]">
               {paginatedFollowers.map((follower, index) => (
                 <tr key={follower.id} className="transition-colors">
+                  {/* Individual User Checkbox */}
+                  <td className="px-6 py-4">
+                    <input
+                      type="checkbox"
+                      checked={selectedUsers.includes(follower.id)}
+                      onChange={() => handleSelectUser(follower.id)}
+                      className="form-checkbox h-5 w-5 bg-transparent border-[#896E9C] rounded text-[#F7009E] focus:ring-0 focus:ring-offset-0"
+                    />
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#F9FAFB]">
                     {(currentPage - 1) * itemsPerPage + index + 1}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-10 w-10">
-                        <img className="h-10 w-10 rounded-full object-cover" src={follower.avatar} alt={follower.name} />
+                        <img 
+                          className="h-10 w-10 rounded-full object-cover" 
+                          src={follower.avatar} 
+                          alt={follower.name}
+                          onError={(e) => {
+                            e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                              follower.name
+                            )}&background=F7009E&color=fff`;
+                          }}
+                        />
                       </div>
                       <div className="ml-4">
                         <div className="text-sm font-medium text-[#F9FAFB]">
@@ -389,7 +489,11 @@ const FollowerManagement = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex space-x-2">
-                      <button onClick={() => handleBlock(follower.id)} className="bg-[#45381F] text-[#FFB800] px-4 py-1 rounded-md hover:bg-[#5A4A28] transition-colors text-xs font-medium">
+                      <button 
+                        onClick={() => handleBlock(follower.id)} 
+                        className="bg-[#45381F] text-[#FFB800] px-4 py-1 rounded-md hover:bg-[#5A4A28] transition-colors text-xs font-medium"
+                        disabled={follower.status === "Blocked"}
+                      >
                         Block
                       </button>
                       <button onClick={() => handleRemove(follower.id)} className="bg-[#551214] text-[#FE4D4F] px-4 py-1 rounded-md hover:bg-[#6B1A1C] transition-colors text-xs font-medium">
