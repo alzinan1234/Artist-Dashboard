@@ -11,10 +11,11 @@ import {
   Area,
   AreaChart,
 } from "recharts";
-import { DollarSign, TrendingUp, Activity, Users } from "lucide-react";
+import { DollarSign, TrendingUp, Activity, Users, X } from "lucide-react";
 
 const EarningSummaryChart = () => {
   const [timeRange, setTimeRange] = useState("Monthly");
+  const [showLifetimeGraph, setShowLifetimeGraph] = useState(false);
 
   // Generate fake data for the chart
   const monthlyData = [
@@ -48,6 +49,14 @@ const EarningSummaryChart = () => {
     month: 2013 + i,
     plays: Math.floor(Math.random() * 2000) + 3000,
     earnings: Math.floor(Math.random() * 2000) + 2500,
+  }));
+
+  // Lifetime growth data (without earnings/revenue)
+  const lifetimeData = Array.from({ length: 24 }, (_, i) => ({
+    month: `M${i + 1}`,
+    plays: Math.floor(Math.random() * 500) + 500 + i * 50,
+    followers: Math.floor(Math.random() * 300) + 300 + i * 40,
+    streams: Math.floor(Math.random() * 400) + 400 + i * 45,
   }));
 
   const getChartData = () => {
@@ -150,7 +159,11 @@ const EarningSummaryChart = () => {
                 </div>
 
                 {/* Chart */}
-                <div className="  md:h-64 w-full">
+                <div 
+                  className="md:h-64 w-full cursor-pointer hover:opacity-80 transition-opacity" 
+                  onClick={() => setShowLifetimeGraph(true)}
+                  title="Click to view lifetime growth"
+                >
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart
                       data={getChartData()}
@@ -470,6 +483,136 @@ const EarningSummaryChart = () => {
           </div>
         </div>
       </div>
+
+      {/* Lifetime Growth Modal */}
+      {showLifetimeGraph && (
+        <div 
+          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
+          onClick={() => setShowLifetimeGraph(false)}
+        >
+          <div 
+            className="bg-[#312B36] rounded-2xl p-6 max-w-6xl w-full max-h-[90vh] overflow-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h2 className="text-white text-2xl font-semibold">Lifetime Growth</h2>
+                <p className="text-gray-400 text-sm">Your complete growth journey</p>
+              </div>
+              <button 
+                onClick={() => setShowLifetimeGraph(false)}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            {/* Legend */}
+            <div className="flex gap-6 mb-6">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-[#A141FE] rounded-full"></div>
+                <span className="text-gray-300 text-sm">Plays</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-[#2BA849] rounded-full"></div>
+                <span className="text-gray-300 text-sm">Followers</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-[#FF7DD0] rounded-full"></div>
+                <span className="text-gray-300 text-sm">Streams</span>
+              </div>
+            </div>
+
+            {/* Chart */}
+            <div className="h-96 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart
+                  data={lifetimeData}
+                  margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                >
+                  <defs>
+                    <linearGradient id="colorLifetimePlays" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#A141FE" stopOpacity={0.5} />
+                      <stop offset="95%" stopColor="#A141FE" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="colorLifetimeFollowers" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#2BA849" stopOpacity={0.5} />
+                      <stop offset="95%" stopColor="#2BA849" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="colorLifetimeStreams" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#FF7DD0" stopOpacity={0.5} />
+                      <stop offset="95%" stopColor="#FF7DD0" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="0" stroke="#E2E8F0" strokeOpacity={0.1} vertical={false} />
+                  <XAxis 
+                    dataKey="month" 
+                    axisLine={false} 
+                    tickLine={false}
+                    tick={{ fill: "#CBD5E0", fontSize: 12, fontWeight: 600 }}
+                  />
+                  <YAxis 
+                    axisLine={false} 
+                    tickLine={false}
+                    tick={{ fill: "#CBD5E0", fontSize: 12, fontWeight: 600 }}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Area
+                    type="monotone"
+                    dataKey="plays"
+                    name="Plays"
+                    stroke="#A141FE"
+                    strokeWidth={3}
+                    fillOpacity={1}
+                    fill="url(#colorLifetimePlays)"
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="followers"
+                    name="Followers"
+                    stroke="#2BA849"
+                    strokeWidth={3}
+                    fillOpacity={1}
+                    fill="url(#colorLifetimeFollowers)"
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="streams"
+                    name="Streams"
+                    stroke="#FF7DD0"
+                    strokeWidth={3}
+                    fillOpacity={1}
+                    fill="url(#colorLifetimeStreams)"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Stats Summary */}
+            <div className="grid grid-cols-3 gap-4 mt-6">
+              <div className="bg-[#29232A] rounded-xl p-4">
+                <p className="text-gray-400 text-xs mb-1">Total Plays</p>
+                <p className="text-white text-2xl font-bold">
+                  {lifetimeData.reduce((acc, curr) => acc + curr.plays, 0).toLocaleString()}
+                </p>
+              </div>
+              <div className="bg-[#29232A] rounded-xl p-4">
+                <p className="text-gray-400 text-xs mb-1">Total Followers</p>
+                <p className="text-white text-2xl font-bold">
+                  {lifetimeData.reduce((acc, curr) => acc + curr.followers, 0).toLocaleString()}
+                </p>
+              </div>
+              <div className="bg-[#29232A] rounded-xl p-4">
+                <p className="text-gray-400 text-xs mb-1">Total Streams</p>
+                <p className="text-white text-2xl font-bold">
+                  {lifetimeData.reduce((acc, curr) => acc + curr.streams, 0).toLocaleString()}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
